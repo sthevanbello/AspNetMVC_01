@@ -26,12 +26,11 @@ namespace CasaDoCodigo
 
             string connectionString = Configuration.GetConnectionString("Default");
 
-            services.AddDbContext<ApplicationContext>(options => options.UseSqlServer(connectionString)
-            );
+            services.AddDbContext<ApplicationContext>(options => options.UseSqlServer(connectionString));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IServiceProvider serviceProvider)
         {
             if (env.IsDevelopment())
             {
@@ -43,6 +42,9 @@ namespace CasaDoCodigo
                 app.UseExceptionHandler("/Home/Error");
             }
 
+            //serviceProvider.GetService<ApplicationContext>().Database.EnsureCreated();
+
+            serviceProvider.GetService<ApplicationContext>().Database.Migrate();
 
             app.UseStaticFiles();
 
@@ -52,6 +54,23 @@ namespace CasaDoCodigo
                     name: "default",
                     template: "{controller=Pedido}/{action=Carrossel}/{id?}");
             });
+
+
+        }
+
+        class DataService
+        {
+            private readonly ApplicationContext context;
+
+            public DataService(ApplicationContext context)
+            {
+                this.context = context;
+            }
+
+            public void InicializaDB()
+            {
+                context.Database.Migrate();
+            }
         }
     }
 }
